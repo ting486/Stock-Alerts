@@ -103,6 +103,12 @@ if __name__ == "__main__":
     def index():
         return "UT Bot Alerter is running!"
         
+    @app.route("/healthz")
+    def healthz():
+        if config.CONFIG_ERROR:
+            return f"Configuration Error: {config.CONFIG_ERROR}", 500
+        return "OK", 200
+        
     def run_flask():
         # Render provides the port in the PORT environment variable
         port = int(os.environ.get("PORT", 5000))

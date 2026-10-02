@@ -9,6 +9,7 @@ def get_env_or_raise(key):
         raise ValueError(f"Environment variable '{key}' is required but not found in .env")
     return val
 
+CONFIG_ERROR = None
 
 try:
     DISCORD_WEBHOOK_URL = get_env_or_raise("DISCORD_WEBHOOK_URL")
@@ -37,4 +38,5 @@ try:
     
     
 except ValueError as e:
+    CONFIG_ERROR = str(e)
     raise Exception(f"Configuration Error: {e}")
