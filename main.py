@@ -75,6 +75,9 @@ def job():
             error_msg = f"Error processing {ticker}: {e}"
             print(error_msg)
             send_discord_error(error_msg)
+            
+        # Sleep for 2 seconds between tickers to avoid Yahoo Finance rate limits
+        time.sleep(2)
 
 def main():
     print("Starting UT Bot Alerter...")
