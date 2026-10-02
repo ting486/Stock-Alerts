@@ -96,24 +96,24 @@ def main():
             time.sleep(1)
 
 if __name__ == "__main__":
-    # # Setup a lightweight Flask app to keep the service alive on Render Free Tier
-    # app = Flask(__name__)
+    # Setup a lightweight Flask app to keep the service alive on Render Free Tier
+    app = Flask(__name__)
     
-    # @app.route("/")
-    # def index():
-    #     return "UT Bot Alerter is running!"
+    @app.route("/")
+    def index():
+        return "UT Bot Alerter is running!"
         
-    # def run_flask():
-    #     # Render provides the port in the PORT environment variable
-    #     port = int(os.environ.get("PORT", 5000))
-    #     app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
+    def run_flask():
+        # Render provides the port in the PORT environment variable
+        port = int(os.environ.get("PORT", 5000))
+        app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
 
-    # # Start Flask in a background thread
-    # flask_thread = threading.Thread(target=run_flask, daemon=True)
-    # flask_thread.start()
+    # Start Flask in a background thread
+    flask_thread = threading.Thread(target=run_flask, daemon=True)
+    flask_thread.start()
     
     # Run the main bot logic
     main()
 
-    sys.exit(0)
+    # sys.exit(0)
     
