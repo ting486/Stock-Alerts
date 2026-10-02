@@ -39,6 +39,6 @@ The included `render.yaml` makes deployment to Render seamless.
 3. Log into [Render.com](https://render.com/) and click **New > Blueprint**.
 4. Connect your GitHub repository and let Render create the Web Service.
 5. Once created, go to your Web Service dashboard and click the **Environment** tab on the left menu.
-6. Click **Add Secret File**.
-7. Set the filename to `.env` and paste the entire contents of your local `.env` file into the editor box.
+6. In **Environment Variables**, insert key-value pair of PYTHON_VERSION and 3.9.13.
+7. Click **Add Secret File**, set the filename to `.env` and paste the entire contents of your local `.env` file into the editor box.
 8. Save the secret file and restart your Web Service.
