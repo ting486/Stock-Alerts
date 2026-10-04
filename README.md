@@ -55,13 +55,14 @@ Render's Free Tier spins down Web Services after 15 minutes of inactivity. To by
 
 ## Deployment (Oracle Cloud Always Free VM)
 
-1. Sign up for [Oracle Cloud Free Tier](https://www.oracle.com/cloud/free/).
-2. Launch an "Always Free" Compute Instance.
+1. Copy `.env.example` to `.env` and configure your variables
+2. Sign up for [Oracle Cloud Free Tier](https://www.oracle.com/cloud/free/).
+3. Launch an "Always Free" Compute Instance.
    - Select the standard **Ubuntu 22.04** Operating System Image (avoid the "minimal" version).
    - Select the default **AMD VM.Standard.E2.1.Micro** instance.
    - In the **Networking** section, check **"Assign a public IPv4 address"** to allow your server to connect to the public internet.
    - Download the SSH private key when creating the instance, and save it to `~/.ssh/`.
-3. In terminal (e.g., Terminal on Mac or Command Prompt on Windows), secure SSH private key if not already done:
+4. In terminal (e.g., Terminal on Mac or Command Prompt on Windows), secure SSH private key if not already done:
    ```bash
    chmod 400 ~/.ssh/<your-private-key>.key
    ```
@@ -69,7 +70,7 @@ Render's Free Tier spins down Web Services after 15 minutes of inactivity. To by
    ```bash
    ssh -i ~/.ssh/<your-private-key>.key ubuntu@<your-vm-public-ip>
    ```
-4. Install `pyenv` prerequisites, Git, and Screen:
+5. Install `pyenv` prerequisites, Git, and Screen:
    ```bash
    sudo apt update
    sudo apt install -y make build-essential libssl-dev zlib1g-dev \
@@ -77,7 +78,7 @@ Render's Free Tier spins down Web Services after 15 minutes of inactivity. To by
    libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev git screen
    ```
    If a screen pops up asking "Which services should be restarted?", just press **Enter** key to accept the default `OK`.
-5. Install `pyenv` and set Python to 3.9.13:
+6. Install `pyenv` and set Python to 3.9.13:
    ```bash
    curl https://pyenv.run | bash
    export PATH="$HOME/.pyenv/bin:$PATH"
@@ -86,55 +87,35 @@ Render's Free Tier spins down Web Services after 15 minutes of inactivity. To by
    pyenv global 3.9.13
    ```
    Note: The `pyenv install` step downloads and compiles Python from scratch. On a Free Tier micro VM, this can take 10 to 20 minutes to complete.
-6. Clone your repository:
+7. Clone your repository:
    ```bash
    git clone <your_github_repo_url>
    cd Stock-Alerts
    ```
-7. Create your `.env` file and insert your configuration:
+8. Create your `.env` file and insert your configuration:
    ```bash
    nano .env
    ```
    To save and exit the nano editor, press `Ctrl + X`, then press `Y`, and hit `Enter`.
-8. Install dependencies:
+9. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-9. Start a `screen` session. This allows the bot to keep running in the background even after you close your SSH terminal:
-   ```bash
-   screen -S stock-alert-bot
-   ```
-10. Run the bot:
+10. Start a `screen` session. This allows the bot to keep running in the background even after you close your SSH terminal:
+    ```bash
+    screen -S stock-alert-bot
+    ```
+11. Run the bot:
     ```bash
     python main.py
     ```
-11. You can now safely detach from the screen session by pressing `Ctrl + A` and then `D`. Your bot is now running 24/7 in the cloud.
+12. You can now safely detach from the screen session by pressing `Ctrl + A` and then `D`. Your bot is now running 24/7 in the cloud.
     (To resume the session later and see the logs, type `screen -r stock-alert-bot`.)
 
-## Updating Code or Configuration on Oracle Cloud
+### Automated CI/CD (GitHub Actions)
 
-Because Oracle Cloud is a raw virtual machine, it will _not_ automatically sync when you push new code to GitHub. If you update your code or want to change your `.env` variables, you must manually pull the changes and restart the bot:
-
-1. SSH back into your VM.
-2. Re-attach to the bot's background session:
-   ```bash
-   screen -r stock-alert-bot
-   ```
-3. Press `Ctrl + C` to stop the bot from running.
-4. **If updating code:** Run `git pull` to fetch your latest changes from GitHub.
-5. **If updating config:** Open your `.env` file, make changes, and save (`Ctrl + X`, `Y`, `Enter`):
-   ```bash
-   nano .env
-   ```
-6. Start the bot back up:
-   ```bash
-   python main.py
-   ```
-7. Detach and leave it running in the background again (`Ctrl + A`, then `D`).
-
-## Automated CI/CD (GitHub Actions)
-
-If you are deploying on Oracle Cloud, you can configure GitHub to automatically deploy your new code every time you push to the `main` branch.
+Because Oracle Cloud is a raw virtual machine, it will _not_ automatically sync when you push new code to GitHub. If you update your code or want to change your `.env` variables, you must manually pull the changes and restart the bot.
+This repository has configured GitHub Actions to automatically deploy your new code every time you push to the `main` branch.
 
 1. Ensure the `.github/workflows/deploy.yml` file is committed and pushed to your repository.
 2. Go to your repository on github.com, click **Settings** > **Secrets and variables** > **Actions**.
@@ -144,4 +125,23 @@ If you are deploying on Oracle Cloud, you can configure GitHub to automatically 
    - `ORACLE_SSH_KEY`: The entire contents of your private `.key` file.
    - `ENV_FILE_RAW`: The complete, raw text of your `.env` file. You can safely copy and paste this directly from your computer.
 
-Once configured, GitHub will automatically SSH into your server, gracefully stop the bot, pull the new code, install any new dependencies, and restart the bot in the background!
+Once configured, GitHub will automatically SSH into your server, gracefully stop the bot, pull the new code, install any new dependencies, and restart the bot in the background.
+
+### Updating .env variables
+
+If updating .env variables, you need to update the `ENV_FILE_RAW` secret in GitHub settings, then manually run the Github Actions workflow since Github Actions CI/CD does not get automatically triggered when secrets are updated.
+
+### Pausing the bot
+
+If you need to pause the bot, you can do so by SSHing back into your VM and stopping the bot.
+
+1. SSH back into your VM:
+   ```bash
+   ssh -i ~/.ssh/<your-private-key>.key ubuntu@<your-vm-public-ip>
+   ```
+2. Re-attach to the bot's background session:
+   ```bash
+   screen -r stock-alert-bot
+   ```
+3. Press `Ctrl + C` to stop the bot from running.
+4. Detach and leave it running in the background again (`Ctrl + A`, then `D`).
