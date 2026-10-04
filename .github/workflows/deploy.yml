@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -16,6 +17,11 @@ jobs:
           username: ${{ secrets.ORACLE_USERNAME }}
           key: ${{ secrets.ORACLE_SSH_KEY }}
           script: |
+            # Safely write the raw multiline secret directly into the .env file
+            cat << 'EOF' > ~/Stock-Alerts/.env
+            ${{ secrets.ENV_FILE_RAW }}
+            EOF
+            
             cd ~/Stock-Alerts
             
             # Stop the bot if it's currently running in the screen session by sending Ctrl+C

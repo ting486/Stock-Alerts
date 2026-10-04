@@ -138,9 +138,10 @@ If you are deploying on Oracle Cloud, you can configure GitHub to automatically 
 
 1. Ensure the `.github/workflows/deploy.yml` file is committed and pushed to your repository.
 2. Go to your repository on github.com, click **Settings** > **Secrets and variables** > **Actions**.
-3. Click **New repository secret** and add the following three secrets:
+3. Click **New repository secret** and add the following four secrets:
    - `ORACLE_HOST`: Your Oracle VM's Public IP address.
    - `ORACLE_USERNAME`: `ubuntu`
    - `ORACLE_SSH_KEY`: The entire contents of your private `.key` file.
+   - `ENV_FILE_RAW`: The complete, raw text of your `.env` file. You can safely copy and paste this directly from your computer.
 
 Once configured, GitHub will automatically SSH into your server, gracefully stop the bot, pull the new code, install any new dependencies, and restart the bot in the background!
