@@ -1,0 +1,31 @@
+name: Deploy to Oracle Cloud
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Oracle VM via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USERNAME }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          script: |
+            cd ~/Stock-Alerts
+            
+            # Stop the bot if it's currently running in the screen session by sending Ctrl+C
+            screen -S stock-alert-bot -X stuff $'\003'
+            
+            # Pull the latest code from GitHub
+            git pull origin main
+            
+            # Update dependencies just in case they changed
+            ~/.pyenv/shims/pip install -r requirements.txt
+            
+            # Send the command to start the bot back up in the screen session
+            screen -S stock-alert-bot -X stuff "python main.py\n"

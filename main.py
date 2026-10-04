@@ -104,7 +104,29 @@ if __name__ == "__main__":
     
     @app.route("/")
     def index():
-        return "UT Bot Alerter is running!"
+        ha_status = "enabled" if config.UT_BOT_USE_HEIKIN_ASHI else "disabled"
+        mention = config.DISCORD_MENTION if config.DISCORD_MENTION else "no one"
+        
+        html = f"""
+        <html>
+            <body style="font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 0 20px;">
+                <h1>UT Bot Alerter is running!</h1>
+                <p>The bot is currently active and will check for stock alerts every <strong>{config.CHECK_INTERVAL_MINUTES} minutes</strong>.</p>
+                <p>It operates strictly between <strong>{config.START_TIME_EDT}</strong> and <strong>{config.END_TIME_EDT} EDT</strong>.</p>
+                
+                <h2>General Configuration</h2>
+                <p>The default fallback list of tickers is: <strong>{", ".join(config.TICKERS)}</strong></p>
+                <p>When an alert triggers, the Discord webhook will mention: <strong>{mention}</strong>.</p>
+
+                <h2>UT Bot Strategy Configuration</h2>
+                <p>The UT Bot strategy is specifically analyzing these tickers: <strong>{", ".join(config.UT_BOT_TICKERS)}</strong></p>
+                <p>It fetches <strong>{config.UT_BOT_FETCH_DATA_PERIOD}</strong> of historical data at a <strong>{config.UT_BOT_FETCH_DATA_INTERVAL}</strong> interval for analysis.</p>
+                <p>The strategy sensitivity is set to <strong>{config.UT_BOT_SENSITIVITY}</strong> with an ATR period of <strong>{config.UT_BOT_ATR_PERIOD}</strong>.</p>
+                <p>Heikin Ashi candles are currently <strong>{ha_status}</strong>.</p>
+            </body>
+        </html>
+        """
+        return html
         
     @app.route("/healthz")
     def healthz():
