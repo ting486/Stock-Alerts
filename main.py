@@ -15,14 +15,19 @@ import sys
 last_signals = {ticker: None for ticker in config.UT_BOT_TICKERS}
 
 def is_within_bot_working_hours():
-    """Checks if the current time is within the bot work hours defined in the config."""
+    """Checks if the current time is within the bot work hours defined in the config and is a weekday."""
     edt_tz = ZoneInfo("America/New_York")
     now = datetime.now(edt_tz)
+    
+    # 0 = Monday, ..., 5 = Saturday, 6 = Sunday
+    if now.weekday() >= 5:
+        return False
+        
     current_time = now.strftime("%H:%M")
     return config.START_TIME_EDT <= current_time <= config.END_TIME_EDT
 
 def sleep_until_bot_working_hours():
-    """Calculates time until the next start time and sleeps."""
+    """Calculates time until the next start time and sleeps, skipping weekends."""
     edt_tz = ZoneInfo("America/New_York")
     now = datetime.now(edt_tz)
     start_hour, start_minute = map(int, config.START_TIME_EDT.split(':'))
@@ -33,12 +38,16 @@ def sleep_until_bot_working_hours():
     if now >= target_time:
         target_time += timedelta(days=1)
         
+    # Skip weekends: if target_time lands on Saturday (5) or Sunday (6), advance to Monday
+    while target_time.weekday() >= 5:
+        target_time += timedelta(days=1)
+        
     sleep_seconds = (target_time - now).total_seconds()
-    print(f"Outside of bot working hours ({config.START_TIME_EDT} - {config.END_TIME_EDT} EDT). Sleeping until {target_time.strftime('%Y-%m-%d %H:%M:%S %Z')}.")
+    print(f"Outside of working hours or weekend. Sleeping until {target_time.strftime('%Y-%m-%d %H:%M:%S %Z')}.")
     time.sleep(sleep_seconds)
 
-def job():
-    print(f"Running scheduled check for {len(config.UT_BOT_TICKERS)} tickers: {config.UT_BOT_TICKERS}...")
+def job_ut_bot():
+    print(f"Running UT Bot check for {len(config.UT_BOT_TICKERS)} tickers: {config.UT_BOT_TICKERS}...")
     for ticker in config.UT_BOT_TICKERS:
         try:
             # We fetch using configured interval and period
@@ -79,17 +88,24 @@ def job():
         # Sleep for 2 seconds between tickers to avoid Yahoo Finance rate limits
         time.sleep(2)
 
+def jobs():
+    edt_tz = ZoneInfo("America/New_York")
+    now_str = datetime.now(edt_tz).strftime('%Y-%m-%d %H:%M:%S %Z')
+    print(f"\n[{now_str} EDT] Starting all scheduled strategy checks...")
+    
+    job_ut_bot()
+    
 def main():
-    print("Starting UT Bot Alerter...")
+    print("Starting Stock Alerter...")
     print(f"Configured to check every {config.CHECK_INTERVAL_MINUTES} minutes.")
     
     # Run once immediately if within bot working hours, else sleep until first start time
     if not is_within_bot_working_hours():
         sleep_until_bot_working_hours()
-    job()
+    jobs()
     
     # Schedule subsequent runs
-    schedule.every(config.CHECK_INTERVAL_MINUTES).minutes.do(job)
+    schedule.every(config.CHECK_INTERVAL_MINUTES).minutes.do(jobs)
     
     while True:
         if not is_within_bot_working_hours():
